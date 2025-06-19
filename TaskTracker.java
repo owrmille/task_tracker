@@ -3,98 +3,122 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class TaskTracker {
+    public static final String RESET = "\u001B[0m";
+    public static final String BLACK = "\033[0;30m";
+    public static final String RED = "\033[0;31m";
+    public static final String GREEN = "\033[0;32m";
+    public static final String CYAN = "\033[0;36m";
+    public static final String GREEN_BOLD = "\033[1;32m";
+    public static final String YELLOW_BOLD = "\033[1;33m";
+    public static final String BLUE_BOLD = "\033[1;34m";
+    
     private static List<Task> tasks = TaskStorage.loadData();
     private static Scanner scanner = new Scanner(System.in);
     private static final LocalDate BEGIN_DATE = LocalDate.of(2025, 6, 9);
     private static final int CURRENT_WEEK = getCurrentWeek();
 
     public static void main(String[] args) {
-        while (true) {
-            System.out.println();
-            System.out.println("======TASK TRACKER======");
-            System.out.println();
-            System.out.println("Choose one option:");
-            System.out.println("1. Add Task");
-            System.out.println("2. Show Tasks");
-            System.out.println("3. Mark Task as Done");
-            System.out.println("4. Delete Task");
-            System.out.println("5. Show General Progress");
-            System.out.println("6. Exit");
-            System.out.println();
+        try {
+            while (true) {
+                printMenu();
+                String option = scanner.nextLine();
 
-            String option = scanner.nextLine();
-
-            switch (option) {
-                case "1" -> {
-                    System.out.println("*** Adding a New Task... ***");
-                    System.out.println();
-                    addTask();
+                switch (option) {
+                    case "1" -> {
+                        printText("\nAdding a New Task...\n", CYAN);
+                        addTask();
+                    }
+                    case "2" -> {
+                        printText("\nShowing List of Tasks...\n", CYAN);
+                        showTasksOfThisWeek();
+                    }
+                    case "3" -> {
+                        printText("\nMarking Task as Done...\n", CYAN);
+                        markTaskAsDone();
+                    }
+                    case "4" -> {
+                        printText("\nDeleting Task...\n", CYAN);
+                        deleteTask();
+                    }
+                    case "5" -> {
+                        printText("\nShowing This Week Progress...\n", CYAN);
+                        showProjectProgressBar(CURRENT_WEEK);
+                    }
+                    case "6" -> {
+                        printText("\nShowing General Progress...\n", CYAN);
+                        showProjectProgressBar();
+                        showWeekProgressBar();
+                    }
+                    case "7" -> { 
+                        TaskStorage.saveData(tasks);
+                        printText("\nExiting...\n", RED);
+                        scanner.close();
+                        return;
+                    }
+                    default -> {
+                        printText("\nInvalid option: use numbers 1-7!\n", RED);
+                    }
+                    
                 }
-                case "2" -> {
-                    System.out.println("*** List of Tasks ***");
-                    System.out.println();
-                    showTasksOfThisWeek();
-                }
-                case "3" -> {
-                    System.out.println("*** Marking Task as Done ***");
-                    markTaskAsDone();
-                }
-                case "4" -> {
-                    System.out.println("*** Deleting Task ***");
-                    deleteTask();
-                }
-                // TO DO:
-                case "5" -> {
-                    System.out.println("*** Showing General Progress ***");
-                    showProjectProgressBar();
-                    showWeekProgressBar();
-                }
-                case "6" -> { 
-                    TaskStorage.saveData(tasks);
-                    System.out.println("*** Exiting... ***");
-                    System.out.println();
-                    scanner.close();
-                    return;
-                }
-                default -> {
-                    System.out.println("Invalid option.");
-                    System.out.println();
-                }
-                
-            }
+            } 
+        } catch (Exception e) {
+            TaskStorage.saveData(tasks);
+            scanner.close();
+            printText("\n❗ ERROR OCCURED ❗\n", RED);  // TO DO: 
         }
+    }
+
+    public static void printMenu() {
+        printDots();
+        printText("\n" + ". ".repeat(6) + " T A S K   T R A C K E R   M E N U " 
+                    + ". ".repeat(6) + "\n", BLUE_BOLD);
+        printDots();
+        printText("1️⃣  Add Task\n", GREEN);
+        printText("2️⃣  Show Tasks\n", GREEN);
+        printText("3️⃣  Mark Task as Done\n", GREEN);
+        printText("4️⃣  Delete Task\n", GREEN);
+        printText("5️⃣  Show This Week Progress\n", GREEN);
+        printText("6️⃣  Show General Progress\n", GREEN);
+        printText("7️⃣  ❌ Exit\n", RED);
+
+        printText("\n👉 Your choice: ", BLACK);
+    }
+
+    public static void printText(String text, String color) {
+        System.out.print(color + text + RESET);
+    }
+
+    public static void printDots() {
+        printText("\n" + ". ".repeat(30) + "\n", BLUE_BOLD);
     }
     
     public static void addTask() {
-        System.out.println("Enter task name:");
+        printText("\nEnter task name: ", BLACK);
         String name = scanner.nextLine();
-        System.out.println("Enter project:");
+        printText("Enter project: ", BLACK);
         String project = scanner.nextLine();
-        System.out.println("Is this task finished? (y/n):");
+        printText("Is this task finished? (y/n): ", BLACK);
         boolean isDone = scanner.nextLine().equals("y");
         Task task = new Task(name, CURRENT_WEEK, project, isDone);
         tasks.add(task);
-        // TaskStorage.saveData(tasks);
+        TaskStorage.saveData(tasks);
     }
 
     public static void showTasksOfThisWeek() {
         if (tasks.isEmpty()) {
-            System.out.println("...EMPTY...");
-            System.out.println();
+            printText("\nEmpty!\n", RED);
             return;
         }
         int size = tasks.size();
-        System.out.printf("%-2s | %-6s | %-15s | %-15s | %s", 
-                        "No.", "Done", "Task", "Project", "Week No.");
-        System.out.println();
-        System.out.println("-------------------------------------------------------------");
+        printText(String.format("%-6s | %-6s | %-15s | %-15s | %s", 
+                        "No.", "Done", "Task", "Project", "Week No."), BLACK);
+        printText("\n" + "-".repeat(61) + "\n", BLACK);
         for (int i = 0; i < size; i++) {
             if (tasks.get(i).getWeekNumber() == CURRENT_WEEK) {
-                System.out.printf((i + 1) + ".  | " + tasks.get(i).fromTaskToString());
-                System.out.println();
+                printText(String.format("%-6s | %s\n", 
+                            i + 1, tasks.get(i).fromTaskToString()), BLACK);
             }
         }
-        System.out.println();
     }
 
     public static int getCurrentWeek() {
@@ -105,37 +129,72 @@ public class TaskTracker {
 
     public static void markTaskAsDone() {
         showTasksOfThisWeek();
-        System.out.println("Enter No. of the task to mark done:");
-        int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
-        tasks.get(idxToMark).markDone();
-        System.out.println("UPDATED TASK:");
-        System.out.printf((idxToMark + 1) + ".  | " + tasks.get(idxToMark).fromTaskToString());
-        System.out.println();
-        // TaskStorage.saveData(tasks);
+        printText("\nEnter No. of the task to mark done (or -1 to exit input): ", BLACK);
+        try {
+            int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
+            if (tasks.get(idxToMark).getWeekNumber() != CURRENT_WEEK) {
+                printText("\nInvalid number: choose tasks only from the current week!\n", RED);
+                return;
+            }
+            tasks.get(idxToMark).markDone();
+            printText("\nUpdating task..\n", CYAN);
+            printText(String.format("%-6s | %s\n", 
+                    idxToMark + 1, tasks.get(idxToMark).fromTaskToString()), BLACK);  
+            TaskStorage.saveData(tasks);
+        } catch (NumberFormatException ne) {
+            printText("\nInvalid input: use numbers!\n", RED);
+        } catch (IndexOutOfBoundsException ie) {
+            printText("\nInvalid input: use valid values for index!\n", RED);
+        }
     }
 
     public static void deleteTask() {
         showTasksOfThisWeek();
-        System.out.println("Enter No. of the task to delete:");
-        int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
-        tasks.remove(idxToMark);
-        System.out.println("Task No. " + idxToMark + " was deleted");
-        System.out.println();
-        // TaskStorage.saveData(tasks);
+        printText("\nEnter No. of the task to delete (or -1 to exit input): ", BLACK);
+        try {
+            int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
+            if (tasks.get(idxToMark).getWeekNumber() != CURRENT_WEEK) {
+                printText("\nInvalid number: choose tasks only from the current week!\n", RED);
+                return;
+            }
+            printText("Do you really want to delete task No. " + (idxToMark+1) + "? (y/n): ", RED);
+            boolean isConfirmed = scanner.nextLine().equals("y");
+            if (isConfirmed) {
+                tasks.remove(idxToMark);
+                printText("\nDeleting task No. " + (idxToMark+1) + "...\n", RED);
+            } else {
+                printText("\nCancelling... Task No. " + (idxToMark+1) + " was not deleted.\n", CYAN);
+            }
+            TaskStorage.saveData(tasks);
+        } catch (NumberFormatException ne) {
+            printText("\nInvalid input: use numbers!\n", RED);
+        } catch (IndexOutOfBoundsException ie) {
+            printText("\nInvalid input: use valid values for index!\n", RED);
+        }
     }
 
     public static void showProjectProgressBar() {
+        showProjectProgressBar(-1);
+    }
+
+    public static void showProjectProgressBar(int week) {
         Map<String, List<Task>> projectMap = new HashMap<>();
-        for (Task task: tasks) {
-            projectMap.computeIfAbsent(task.getProject(), newProject -> new ArrayList<>()).add(task);
+        if (week != -1) {
+            printText("\nWeek " + week + ": ", YELLOW_BOLD);
         }
-        System.out.println("\nProgress by project");
+        for (Task task: tasks) {
+            if (week == -1 || task.getWeekNumber() == week) {
+                projectMap.computeIfAbsent(task.getProject(), 
+                    newProject -> new ArrayList<>()).add(task);
+            }
+        }
+        printText("\nProgress by Project\n", GREEN);
         for (String project : projectMap.keySet()) {
             List<Task> tasksInProject = projectMap.get(project);
             long doneCount = tasksInProject.stream().filter(Task::getIsDone).count();
             int percentage = (int) (100 * doneCount/tasksInProject.size());
             String bar = drawProgressBar(project, percentage);
-            System.out.printf("- %s: %s %d%%\n", project, bar, percentage);
+            printText(String.format("\n- %-20s: %s %d%%\n", project, bar, percentage), BLACK);
         }
     }
 
@@ -151,15 +210,17 @@ public class TaskTracker {
     public static void showWeekProgressBar() {
         Map<String, List<Task>> weekMap = new HashMap<>();
         for (Task task: tasks) {
-            weekMap.computeIfAbsent(String.valueOf(task.getWeekNumber()), newWeek -> new ArrayList<>()).add(task);
+            weekMap.computeIfAbsent(String.valueOf(task.getWeekNumber()), 
+                                    newWeek -> new ArrayList<>()).add(task);
         }
-        System.out.println("\nProgress by week");
+        printText("\nProgress by Week\n", GREEN);
         for (String week : weekMap.keySet()) {
             List<Task> tasksInWeek = weekMap.get(week);
             long doneCount = tasksInWeek.stream().filter(Task::getIsDone).count();
             int percentage = (int) (100 * doneCount/tasksInWeek.size());
             String bar = drawProgressBar(week, percentage);
-            System.out.printf("- %s: %s %d%%\n", week, bar, percentage);
+
+            printText(String.format("\n- %-6s: %s %d%%\n", week, bar, percentage), BLACK);
         }
     }
 }

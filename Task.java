@@ -19,6 +19,10 @@ public class Task {
         return this.project;
     }
 
+    public int getWeekNumber() {
+        return this.weekNumber;
+    }
+
     public void markDone() {
         this.isDone = true;
     }

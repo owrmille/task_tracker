@@ -1,8 +1,12 @@
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class TaskTracker {
     private static List<Task> tasks = TaskStorage.loadData();
     private static Scanner scanner = new Scanner(System.in);
+    private static final LocalDate BEGIN_DATE = LocalDate.of(2025, 6, 9);
+    private static final int CURRENT_WEEK = getCurrentWeek();
 
     public static void main(String[] args) {
         while (true) {
@@ -29,11 +33,11 @@ public class TaskTracker {
                 case "2" -> {
                     System.out.println("*** List of Tasks ***");
                     System.out.println();
-                    showTasks();
+                    showTasksOfThisWeek();
                 }
                 case "3" -> {
                     System.out.println("*** Marking task as done ***");
-                    markTaskDone();
+                    markTaskAsDone();
                 }
                 case "4" -> {
                     System.out.println("*** Deleting task ***");
@@ -66,16 +70,14 @@ public class TaskTracker {
         String name = scanner.nextLine();
         System.out.println("Enter project:");
         String project = scanner.nextLine();
-        System.out.println("Enter a week number:");
-        int weekNumber = Integer.parseInt(scanner.nextLine());
         System.out.println("Is this task finished? (y/n):");
         boolean isDone = scanner.nextLine().equals("y");
-        Task task = new Task(name, weekNumber, project, isDone);
+        Task task = new Task(name, CURRENT_WEEK, project, isDone);
         tasks.add(task);
         // TaskStorage.saveData(tasks);
     }
 
-    public static void showTasks() {
+    public static void showTasksOfThisWeek() {
         if (tasks.isEmpty()) {
             System.out.println("...EMPTY...");
             System.out.println();
@@ -87,14 +89,22 @@ public class TaskTracker {
         System.out.println();
         System.out.println("-------------------------------------------------------------");
         for (int i = 0; i < size; i++) {
-            System.out.printf((i + 1) + ".  | " + tasks.get(i).fromTaskToString());
-            System.out.println();
+            if (tasks.get(i).getWeekNumber() == CURRENT_WEEK) {
+                System.out.printf((i + 1) + ".  | " + tasks.get(i).fromTaskToString());
+                System.out.println();
+            }
         }
         System.out.println();
     }
 
-    public static void markTaskDone() {
-        showTasks();
+    public static int getCurrentWeek() {
+        LocalDate today = LocalDate.now();
+        int diff = (int) ChronoUnit.WEEKS.between(BEGIN_DATE, today);
+        return diff + 1;
+    }
+
+    public static void markTaskAsDone() {
+        showTasksOfThisWeek();
         System.out.println("Enter No. of the task to mark done:");
         int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
         tasks.get(idxToMark).markDone();
@@ -105,7 +115,7 @@ public class TaskTracker {
     }
 
     public static void deleteTask() {
-        showTasks();
+        showTasksOfThisWeek();
         System.out.println("Enter No. of the task to delete:");
         int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
         tasks.remove(idxToMark);

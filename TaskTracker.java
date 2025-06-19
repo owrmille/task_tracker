@@ -43,6 +43,7 @@ public class TaskTracker {
                 case "5" -> {
                     System.out.println("*** Showing progress bars ***");
                     showProjectProgressBar();
+                    showWeekProgressBar();
                 }
                 case "6" -> { 
                     TaskStorage.saveData(tasks);
@@ -135,5 +136,20 @@ public class TaskTracker {
             bar.append(i < filledCount ? "\u25A0" : "\u25A1");
         }
         return bar.toString();
+    }
+
+    public static void showWeekProgressBar() {
+        Map<String, List<Task>> weekMap = new HashMap<>();
+        for (Task task: tasks) {
+            weekMap.computeIfAbsent(String.valueOf(task.getWeekNumber()), newWeek -> new ArrayList<>()).add(task);
+        }
+        System.out.println("\nProgress by week");
+        for (String week : weekMap.keySet()) {
+            List<Task> tasksInWeek = weekMap.get(week);
+            long doneCount = tasksInWeek.stream().filter(Task::getIsDone).count();
+            int percentage = (int) (100 * doneCount/tasksInWeek.size());
+            String bar = drawProgressBar(week, percentage);
+            System.out.printf("- %s: %s %d%%\n", week, bar, percentage);
+        }
     }
 }

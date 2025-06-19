@@ -15,10 +15,10 @@ public class TaskTracker {
             System.out.println();
             System.out.println("Choose one option:");
             System.out.println("1. Add Task");
-            System.out.println("2. Show tasks");
-            System.out.println("3. Mark task as done");
-            System.out.println("4. Delete task");
-            System.out.println("5. Show progress bars");
+            System.out.println("2. Show Tasks");
+            System.out.println("3. Mark Task as Done");
+            System.out.println("4. Delete Task");
+            System.out.println("5. Show General Progress");
             System.out.println("6. Exit");
             System.out.println();
 
@@ -26,7 +26,7 @@ public class TaskTracker {
 
             switch (option) {
                 case "1" -> {
-                    System.out.println("*** Adding a new task... ***");
+                    System.out.println("*** Adding a New Task... ***");
                     System.out.println();
                     addTask();
                 }
@@ -36,16 +36,16 @@ public class TaskTracker {
                     showTasksOfThisWeek();
                 }
                 case "3" -> {
-                    System.out.println("*** Marking task as done ***");
+                    System.out.println("*** Marking Task as Done ***");
                     markTaskAsDone();
                 }
                 case "4" -> {
-                    System.out.println("*** Deleting task ***");
+                    System.out.println("*** Deleting Task ***");
                     deleteTask();
                 }
                 // TO DO:
                 case "5" -> {
-                    System.out.println("*** Showing progress bars ***");
+                    System.out.println("*** Showing General Progress ***");
                     showProjectProgressBar();
                     showWeekProgressBar();
                 }

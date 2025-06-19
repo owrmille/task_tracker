@@ -23,7 +23,7 @@ public class Task {
         this.isDone = true;
     }
 
-    public String fromTasktoString() {
+    public String fromTaskToString() {
         return String.format("%-6s | %-15s | %-15s | %s",
                             (this.isDone ? "[x]" : "[ ]"),
                             this.name,

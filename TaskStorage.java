@@ -24,7 +24,7 @@ public class TaskStorage {
     public static void saveData(List<Task> tasks) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(FILE_NAME))) {
             for  (Task task : tasks) {
-                writer.println(task.fromTasktoString());
+                writer.println(task.fromTaskToString());
             }
         } catch (IOException e) {
             System.out.println("Failed to save tasks");

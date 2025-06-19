@@ -40,10 +40,10 @@ public class TaskTracker {
                     deleteTask();
                 }
                 // TO DO:
-                // case "5" -> {
-                //     System.out.println("*** Showing progress bars ***");
-                //     showProgressBars();
-                // }
+                case "5" -> {
+                    System.out.println("*** Showing progress bars ***");
+                    showProjectProgressBar();
+                }
                 case "6" -> { 
                     TaskStorage.saveData(tasks);
                     System.out.println("*** Exiting... ***");
@@ -86,7 +86,7 @@ public class TaskTracker {
         System.out.println();
         System.out.println("-------------------------------------------------------------");
         for (int i = 0; i < size; i++) {
-            System.out.printf((i + 1) + ".  | " + tasks.get(i).fromTasktoString());
+            System.out.printf((i + 1) + ".  | " + tasks.get(i).fromTaskToString());
             System.out.println();
         }
         System.out.println();
@@ -98,7 +98,7 @@ public class TaskTracker {
         int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
         tasks.get(idxToMark).markDone();
         System.out.println("UPDATED TASK:");
-        System.out.printf((idxToMark + 1) + ".  | " + tasks.get(idxToMark).fromTasktoString());
+        System.out.printf((idxToMark + 1) + ".  | " + tasks.get(idxToMark).fromTaskToString());
         System.out.println();
         // TaskStorage.saveData(tasks);
     }
@@ -111,5 +111,29 @@ public class TaskTracker {
         System.out.println("Task No. " + idxToMark + " was deleted");
         System.out.println();
         // TaskStorage.saveData(tasks);
+    }
+
+    public static void showProjectProgressBar() {
+        Map<String, List<Task>> projectMap = new HashMap<>();
+        for (Task task: tasks) {
+            projectMap.computeIfAbsent(task.getProject(), newProject -> new ArrayList<>()).add(task);
+        }
+        System.out.println("\nProgress by project");
+        for (String project : projectMap.keySet()) {
+            List<Task> tasksInProject = projectMap.get(project);
+            long doneCount = tasksInProject.stream().filter(Task::getIsDone).count();
+            int percentage = (int) (100 * doneCount/tasksInProject.size());
+            String bar = drawProgressBar(project, percentage);
+            System.out.printf("- %s: %s %d%%\n", project, bar, percentage);
+        }
+    }
+
+    public static String drawProgressBar(String project, int percentage) {
+        StringBuilder bar = new StringBuilder();
+        int filledCount = percentage / 10 * 2;
+        for (int i = 0; i < 20; i++) {
+            bar.append(i < filledCount ? "\u25A0" : "\u25A1");
+        }
+        return bar.toString();
     }
 }

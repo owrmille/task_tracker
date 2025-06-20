@@ -27,12 +27,23 @@ public class Task {
         this.isDone = true;
     }
 
-    public String fromTaskToString() {
-        return String.format("%-6s | %-15s | %-15s | %s",
-                            (this.isDone ? "[x]" : "[ ]"),
-                            this.name,
-                            this.project,
-                            this.weekNumber);
+    public static String cutText(String s) {
+        if (s.length() > 20) {
+            return s.substring(0, 16).concat("...");
+        }
+        return s;
+    }
+
+    public String fromTaskToString(boolean needToCut) {
+        String taskName = needToCut ? cutText(this.name) : this.name;
+        String projectName = needToCut ? cutText(this.project) : this.project;
+
+        return String.format("%-6s | %-20s | %-20s | %s",
+                        (this.isDone ? "[x]" : "[ ]"),
+                        taskName,
+                        projectName,
+                        this.weekNumber);
+
     }
 
     public static Task fromStringToTask(String line) {
@@ -45,4 +56,7 @@ public class Task {
         return task;
     }
 
+    public Task copyTask() {
+        return new Task(this.name, this.weekNumber, this.project, this.isDone);
+    }
 }

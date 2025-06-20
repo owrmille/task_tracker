@@ -12,13 +12,14 @@ public class TaskTracker {
     public static final String YELLOW_BOLD = "\033[1;33m";
     public static final String BLUE_BOLD = "\033[1;34m";
     
-    private static List<Task> tasks = TaskStorage.loadData();
-    private static Scanner scanner = new Scanner(System.in);
     private static final LocalDate BEGIN_DATE = LocalDate.of(2025, 6, 9);
     private static final int CURRENT_WEEK = getCurrentWeek();
+    private static List<Task> tasks = TaskStorage.loadData();
+    private static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
         try {
+            TaskStorage.backupFile();
             while (true) {
                 printMenu();
                 String option = scanner.nextLine();
@@ -41,14 +42,20 @@ public class TaskTracker {
                         deleteTask();
                     }
                     case "5" -> {
+                        printText("\nDuplicating Task...\n", CYAN);
+                        duplicateTask();
+                    }
+                    case "6" -> {
                         printText("\nShowing This Week Progress...\n", CYAN);
                         showProjectProgressBar(CURRENT_WEEK);
                     }
-                    case "6" -> {
-                        printText("\nShowing General Progress...\n", CYAN);
-                        showProjectProgressBar();
-                        showWeekProgressBar();
-                    }
+                    // lost its meaning after some changes in TaskStorage -> 
+                    // TO DO: find a way to display general progress using several input files
+                    // case "6" -> {
+                    //     printText("\nShowing General Progress...(currently unavailable)\n", CYAN);
+                    //     showProjectProgressBar();
+                    //     showWeekProgressBar();
+                    // }
                     case "7" -> { 
                         TaskStorage.saveData(tasks);
                         printText("\nExiting...\n", RED);
@@ -64,7 +71,7 @@ public class TaskTracker {
         } catch (Exception e) {
             TaskStorage.saveData(tasks);
             scanner.close();
-            printText("\n❗ ERROR OCCURED ❗\n", RED);  // TO DO: 
+            printText("\n❗ ERROR OCCURED ❗\n", RED);  // TO DO: specify each case and delete this one
         }
     }
 
@@ -77,8 +84,9 @@ public class TaskTracker {
         printText("2️⃣  Show Tasks\n", GREEN);
         printText("3️⃣  Mark Task as Done\n", GREEN);
         printText("4️⃣  Delete Task\n", GREEN);
-        printText("5️⃣  Show This Week Progress\n", GREEN);
-        printText("6️⃣  Show General Progress\n", GREEN);
+        printText("5️⃣  Duplicate Task\n", GREEN);
+        printText("6️⃣  Show This Week Progress\n", GREEN);
+        // printText("6️⃣  Show General Progress (currently unavailable)\n", RED);
         printText("7️⃣  ❌ Exit\n", RED);
 
         printText("\n👉 Your choice: ", BLACK);
@@ -104,30 +112,39 @@ public class TaskTracker {
         TaskStorage.saveData(tasks);
     }
 
-    public static void showTasksOfThisWeek() {
+    public static boolean isTasksEmpty() {
         if (tasks.isEmpty()) {
-            printText("\nEmpty!\n", RED);
-            return;
+            printText("\nEmpty! There are no tasks.\n", RED);
+            return true;
         }
+        return false;
+    }
+
+    public static void showTasksOfThisWeek() {
+        if (isTasksEmpty()) return;
         int size = tasks.size();
-        printText(String.format("%-6s | %-6s | %-15s | %-15s | %s", 
+        printText(String.format("%-6s | %-6s | %-20s | %-20s | %s", 
                         "No.", "Done", "Task", "Project", "Week No."), BLACK);
-        printText("\n" + "-".repeat(61) + "\n", BLACK);
+        printText("\n" + "-".repeat(71) + "\n", BLACK);
         for (int i = 0; i < size; i++) {
             if (tasks.get(i).getWeekNumber() == CURRENT_WEEK) {
                 printText(String.format("%-6s | %s\n", 
-                            i + 1, tasks.get(i).fromTaskToString()), BLACK);
+                            i + 1, tasks.get(i).fromTaskToString(true)), BLACK);
             }
         }
     }
 
+    public static LocalDate getToday() {
+        return LocalDate.now();
+    }
+
     public static int getCurrentWeek() {
-        LocalDate today = LocalDate.now();
-        int diff = (int) ChronoUnit.WEEKS.between(BEGIN_DATE, today);
+        int diff = (int) ChronoUnit.WEEKS.between(BEGIN_DATE, getToday());
         return diff + 1;
     }
 
     public static void markTaskAsDone() {
+        if (isTasksEmpty()) return;
         showTasksOfThisWeek();
         printText("\nEnter No. of the task to mark done (or -1 to exit input): ", BLACK);
         try {
@@ -139,7 +156,7 @@ public class TaskTracker {
             tasks.get(idxToMark).markDone();
             printText("\nUpdating task..\n", CYAN);
             printText(String.format("%-6s | %s\n", 
-                    idxToMark + 1, tasks.get(idxToMark).fromTaskToString()), BLACK);  
+                    idxToMark + 1, tasks.get(idxToMark).fromTaskToString(true)), BLACK);  
             TaskStorage.saveData(tasks);
         } catch (NumberFormatException ne) {
             printText("\nInvalid input: use numbers!\n", RED);
@@ -149,6 +166,7 @@ public class TaskTracker {
     }
 
     public static void deleteTask() {
+        if (isTasksEmpty()) return;
         showTasksOfThisWeek();
         printText("\nEnter No. of the task to delete (or -1 to exit input): ", BLACK);
         try {
@@ -173,11 +191,31 @@ public class TaskTracker {
         }
     }
 
+    public static void duplicateTask() {
+        if (isTasksEmpty()) return;
+        printText("\nEnter No. of the task to duplicate (or -1 to exit input): ", BLACK);
+        try {
+            int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
+            if (tasks.get(idxToMark).getWeekNumber() != CURRENT_WEEK) {
+                printText("\nInvalid number: choose tasks only from the current week!\n", RED);
+                return;
+            }
+            tasks.add(tasks.get(idxToMark).copyTask());
+            printText("\nDuplicating task No. " + (idxToMark+1) + "...\n", CYAN);
+            TaskStorage.saveData(tasks);
+        } catch (NumberFormatException ne) {
+            printText("\nInvalid input: use numbers!\n", RED);
+        } catch (IndexOutOfBoundsException ie) {
+            printText("\nInvalid input: use valid values for index!\n", RED);
+        }
+    }
+
     public static void showProjectProgressBar() {
         showProjectProgressBar(-1);
     }
 
     public static void showProjectProgressBar(int week) {
+        if (isTasksEmpty()) return;
         Map<String, List<Task>> projectMap = new HashMap<>();
         if (week != -1) {
             printText("\nWeek " + week + ": ", YELLOW_BOLD);
@@ -194,7 +232,7 @@ public class TaskTracker {
             long doneCount = tasksInProject.stream().filter(Task::getIsDone).count();
             int percentage = (int) (100 * doneCount/tasksInProject.size());
             String bar = drawProgressBar(project, percentage);
-            printText(String.format("\n- %-20s: %s %d%%\n", project, bar, percentage), BLACK);
+            printText(String.format("\n- %-20s: %s %d%%\n", Task.cutText(project), bar, percentage), BLACK);
         }
     }
 
@@ -207,20 +245,23 @@ public class TaskTracker {
         return bar.toString();
     }
 
-    public static void showWeekProgressBar() {
-        Map<String, List<Task>> weekMap = new HashMap<>();
-        for (Task task: tasks) {
-            weekMap.computeIfAbsent(String.valueOf(task.getWeekNumber()), 
-                                    newWeek -> new ArrayList<>()).add(task);
-        }
-        printText("\nProgress by Week\n", GREEN);
-        for (String week : weekMap.keySet()) {
-            List<Task> tasksInWeek = weekMap.get(week);
-            long doneCount = tasksInWeek.stream().filter(Task::getIsDone).count();
-            int percentage = (int) (100 * doneCount/tasksInWeek.size());
-            String bar = drawProgressBar(week, percentage);
+    // lost its meaning after some changes in TaskStorage -> 
+    // TO DO: find a way to display general progress using several input files
+//     public static void showWeekProgressBar() {
+//         if (isTasksEmpty()) return;
+//         Map<String, List<Task>> weekMap = new HashMap<>();
+//         for (Task task: tasks) {
+//             weekMap.computeIfAbsent(String.valueOf(task.getWeekNumber()), 
+//                                     newWeek -> new ArrayList<>()).add(task);
+//         }
+//         printText("\nProgress by Week\n", GREEN);
+//         for (String week : weekMap.keySet()) {
+//             List<Task> tasksInWeek = weekMap.get(week);
+//             long doneCount = tasksInWeek.stream().filter(Task::getIsDone).count();
+//             int percentage = (int) (100 * doneCount/tasksInWeek.size());
+//             String bar = drawProgressBar(week, percentage);
 
-            printText(String.format("\n- %-6s: %s %d%%\n", week, bar, percentage), BLACK);
-        }
-    }
+//             printText(String.format("\n- %-6s: %s %d%%\n", week, bar, percentage), BLACK);
+//         }
+//     }
 }

@@ -1,3 +1,5 @@
 .vscode/
+tasks/
+backups/
+tasks*.txt
 *.class
-tasks.txt

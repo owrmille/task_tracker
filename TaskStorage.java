@@ -19,7 +19,8 @@ public class TaskStorage {
 
     public static String generateFileName(String directory, int week, String date, String suffix) {
         if (suffix == null || suffix.isEmpty()) {
-            return String.format("%sweek_%d_%s.txt", directory, week, date);
+            return String.format("%sweek_%d.txt", directory, week);
+            // return String.format("%sweek_%d_%s.txt", directory, week, date);
         } else {
             return String.format("%sweek_%d_%s_%s.txt", directory, week, date, suffix);
         }

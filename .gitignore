@@ -1,5 +1,7 @@
 .vscode/
+.DS_STORE
 tasks/
 backups/
+copies_draft/
 tasks*.txt
 *.class

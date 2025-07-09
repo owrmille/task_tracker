@@ -193,6 +193,7 @@ public class TaskTracker {
 
     public static void duplicateTask() {
         if (isTasksEmpty()) return;
+        showTasksOfThisWeek();
         printText("\nEnter No. of the task to duplicate (or -1 to exit input): ", BLACK);
         try {
             int idxToMark = Integer.parseInt(scanner.nextLine()) - 1;
@@ -226,13 +227,18 @@ public class TaskTracker {
                     newProject -> new ArrayList<>()).add(task);
             }
         }
-        printText("\nProgress by Project\n", GREEN);
+        printText("\nProgress by Project\n", YELLOW_BOLD);
         for (String project : projectMap.keySet()) {
             List<Task> tasksInProject = projectMap.get(project);
             long doneCount = tasksInProject.stream().filter(Task::getIsDone).count();
             int percentage = (int) (100 * doneCount/tasksInProject.size());
             String bar = drawProgressBar(project, percentage);
-            printText(String.format("\n- %-20s: %s %d%%\n", Task.cutText(project), bar, percentage), BLACK);
+            if (percentage == 100) {
+                printText(String.format("\n- %-20s: %s %d%%\n", Task.cutText(project), bar, percentage), GREEN);
+
+            } else {
+                printText(String.format("\n- %-20s: %s %d%%\n", Task.cutText(project), bar, percentage), BLACK);
+            }
         }
     }
 

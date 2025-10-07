@@ -1,3 +1,5 @@
+package com.owrmille.tasktracker;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -7,8 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class TaskStorage {
-    private static final String FILE_DIR = "./tasks/";
-    private static final String BACKUP_DIR = "./backups/";
+    private static final String FILE_DIR = "./data/tasks/";
+    private static final String BACKUP_DIR = "./data/backups/";
     private static final String FILE_NAME = getFileName();
     private static final String BACKUP_FILE_NAME = getBackupFileName();
 

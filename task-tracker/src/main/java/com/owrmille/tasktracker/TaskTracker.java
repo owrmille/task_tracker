@@ -1,3 +1,5 @@
+package com.owrmille.tasktracker;
+
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -12,7 +14,7 @@ public class TaskTracker {
     public static final String YELLOW_BOLD = "\033[1;33m";
     public static final String BLUE_BOLD = "\033[1;34m";
     
-    private static final LocalDate BEGIN_DATE = LocalDate.of(2025, 6, 9);
+    private static final LocalDate BEGIN_DATE = LocalDate.of(2025, 10, 6);
     private static final int CURRENT_WEEK = getCurrentWeek();
     private static List<Task> tasks = TaskStorage.loadData();
     private static Scanner scanner = new Scanner(System.in);
@@ -26,27 +28,27 @@ public class TaskTracker {
 
                 switch (option) {
                     case "1" -> {
-                        printText("\nAdding a New Task...\n", CYAN);
+                        printText("\nAdding a new task...\n", CYAN);
                         addTask();
                     }
                     case "2" -> {
-                        printText("\nShowing List of Tasks...\n", CYAN);
+                        printText("\nShowing list of tasks...\n", CYAN);
                         showTasksOfThisWeek();
                     }
                     case "3" -> {
-                        printText("\nMarking Task as Done...\n", CYAN);
+                        printText("\nMarking task as done...\n", CYAN);
                         markTaskAsDone();
                     }
                     case "4" -> {
-                        printText("\nDeleting Task...\n", CYAN);
+                        printText("\nDeleting task...\n", CYAN);
                         deleteTask();
                     }
                     case "5" -> {
-                        printText("\nDuplicating Task...\n", CYAN);
+                        printText("\nDuplicating task...\n", CYAN);
                         duplicateTask();
                     }
                     case "6" -> {
-                        printText("\nShowing This Week Progress...\n", CYAN);
+                        printText("\nShowing this week progress...\n", CYAN);
                         showProjectProgressBar(CURRENT_WEEK);
                     }
                     // lost its meaning after some changes in TaskStorage -> 
@@ -101,14 +103,56 @@ public class TaskTracker {
     }
     
     public static void addTask() {
-        printText("\nEnter task name: ", BLACK);
-        String name = scanner.nextLine();
-        printText("Enter project: ", BLACK);
-        String project = scanner.nextLine();
-        printText("Is this task finished? (y/n): ", BLACK);
-        boolean isDone = scanner.nextLine().equals("y");
-        Task task = new Task(name, CURRENT_WEEK, project, isDone);
-        tasks.add(task);
+        String name = "";
+        String project = "";
+        String numTasksStr;
+        int numTasks = 1;
+        boolean isDone = false;
+        while (name.isEmpty()) {
+            printText("\nEnter task name (or press \"q\" to cancel): ", BLACK);
+            name = scanner.nextLine();
+            if (name.equals("q")) {
+                printText("\nGoing back to the main menu...", CYAN);
+                return;
+            }
+        }
+        while (project.isEmpty()) {
+            printText("Enter project (or press \"q\" to cancel): ", BLACK);
+            project = scanner.nextLine();
+            if (project.equals("q")) {
+                printText("\nGoing back to the main menu...", CYAN);
+                return;
+            }
+        }
+
+        boolean isNumSetUp = false;
+        while (!isNumSetUp) {
+            printText("(OPTIONAL) Enter how many times to repeat this task, or press Enter for 1, or 'q' to cancel: ", BLACK);
+            numTasksStr = scanner.nextLine();
+            if (numTasksStr.equals("q")) {
+                return;
+            } else if (numTasksStr.isEmpty()) {
+                numTasks = 1;
+                break;
+            }
+            try {
+                numTasks = Integer.parseInt(numTasksStr);
+                if (numTasks < 1) {
+                    printText("Invalid input: number must be positive. Try again.\n", RED);
+                }
+                isNumSetUp = true;
+            } catch (NumberFormatException e) {
+                printText("Invalid input: not a number. Try again.", RED);
+            }
+        }
+
+        // printText("Is this task finished? (y/n): ", BLACK);
+        // isDone = scanner.nextLine().equals("y");
+
+        while (numTasks-- > 0) {
+            Task task = new Task(name, CURRENT_WEEK, project, isDone);
+            tasks.add(task);
+        }
         TaskStorage.saveData(tasks);
     }
 

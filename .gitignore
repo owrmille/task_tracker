@@ -1,5 +1,7 @@
 .vscode/
 .DS_STORE
+task-tracker/target/
+remove_later
 tasks/
 backups/
 copies_draft/

@@ -1,3 +1,5 @@
+package com.owrmille.tasktracker;
+
 public class Task {
     private String name;
     private boolean isDone;
